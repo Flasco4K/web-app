@@ -3,7 +3,7 @@ const config = {
     host:"localhost",
     user:"root",
     password:"4179em2427",
-    database:"blogapp"
+    database:"blogdb"
     }
 }
 module.exports = config;

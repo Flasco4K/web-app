@@ -12,8 +12,9 @@
         <div class="container mt-3">
             <div class="row">
                 <div class="col-md-12 mt-3">
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         <input type="hidden" name="blogid" value="<%= blog.blogid %>">
+                        <input type="hidden" name="resim" value="<%= blog.resim %>"> 
                         <div class="row mb-3">
                             <label for="baslik" class="col-sm-2 col-form-label">Baslik</label>
                             <div class="col-sm-8">
@@ -24,15 +25,15 @@
                         <div class="row mb-3">
                             <label for="aciklama" class="col-sm-2 col-form-label">Aciklama</label>
                             <div class="col-sm-8">
-                                <textarea name="aciklama" rows="10"
+                                <textarea id="editor" name="aciklama" rows="10"
                                     class="form-control"><%= blog.aciklama  %></textarea>
                             </div>
                         </div>
                         <div class="row mb-3">
                             <label for="resim" class="col-sm-2 col-form-label">Resim</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" id="resim" name="resim"
-                                    value="<%= blog.resim  %>">
+                                <img src="/static/images/<%= blog.resim %>" alt="" width="150px"> <!--Resmin Editte Gözükmesi-->
+                                <input type="file" class="form-control" id="resim" name="resim">
                             </div>
                         </div>
                         <div class="row mb-3">

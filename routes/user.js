@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const db = require("../data/db");
-
-router.use("/blogs/category/:categoryid", async function (req, res) {
+// KATEGORİ
+router.get("/blogs/category/:categoryid", async function (req, res) {
   const id = req.params.categoryid;
   try {
     const [blogs] = await db.execute("select * from blog where categoryid=?", [
@@ -23,7 +23,7 @@ router.use("/blogs/category/:categoryid", async function (req, res) {
 });
 
 // BLOG DETAY
-router.use("/blogs/:blogid", async (req, res) => {
+router.get("/blogs/:blogid", async (req, res) => {
   const id = req.params.blogid;
   try {
     const [blogs] = await db.execute("select * from blog where blogid=?", [id]);
@@ -43,7 +43,7 @@ router.use("/blogs/:blogid", async (req, res) => {
 });
 
 // BLOG LİSTESİ
-router.use("/blogs", async (req, res) => {
+router.get("/blogs", async (req, res) => {
   try {
     const [blogs] = await db.execute(
       "select * from blog where onay=1 and anasayfa=1"
@@ -61,7 +61,7 @@ router.use("/blogs", async (req, res) => {
 });
 
 // ANASAYFA
-router.use("/", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const [blogs] = await db.execute("select * from blog where onay=1");
     const [categories] = await db.execute("select * from category");

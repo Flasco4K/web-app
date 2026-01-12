@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const fs = require("fs")
 
 const db = require("../data/db");
+const imageUpload = require("../helpers/image-upload")
 
 router.get("/blog/delete/:blogid", async function (req, res) { //Delete İşlemi
     const blogid = req.params.blogid;
@@ -58,6 +60,37 @@ router.post("/category/delete/:categoryid", async function (req, res) { //Delete
     }
 });
 
+router.get("/blog/create", async (req, res) => {
+    try {
+        const [categories,] = await db.execute("select * from category");
+        res.render("admin/blog-create", {
+            title: "add blog",
+            categories: categories,
+        });
+    } catch (err) {
+        console.log(err);
+    }
+});
+ 
+router.post("/blog/create",imageUpload.upload.single("resim"), async function (req, res) { //Resim Güncellemesi
+    const baslik = req.body.baslik;
+    const aciklama = req.body.aciklama;
+    const resim = req.file.filename;
+    const kategori = req.body.kategori;
+    const anasayfa = req.body.anasayfa == "on" ? 1 : 0; //Anasayfa Seçilmişse 1 True Seçilmemişse 0
+    const onay = req.body.onay == "on" ? 1 : 0; //Anasayfa Seçilmişse 1 True Seçilmemişse 0
+
+    try {
+        await db.execute(
+            "INSERT INTO blog(baslik,aciklama,resim,anasayfa,onay,categoryid) VALUES (?,?,?,?,?,?)",
+            [baslik, aciklama, resim, anasayfa, onay, kategori]
+        );
+        res.redirect("/admin/blogs?action=create");
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 router.get("/:category/create", async (req, res) => {
     try {
         res.render("admin/category-create", {
@@ -76,37 +109,6 @@ router.post("/category/create", async function (req, res) {
         res.redirect("/admin/categories?action=create");
     }
     catch (err) {
-        console.log(err);
-    }
-});
-
-router.get("/blog/create", async (req, res) => {
-    try {
-        const [categories] = await db.execute("select * from category");
-        res.render("admin/blog-create", {
-            title: "add blog",
-            categories: categories,
-        });
-    } catch (err) {
-        console.log(err);
-    }
-});
-
-router.post("/blog/create", async function (req, res) {
-    const baslik = req.body.baslik;
-    const aciklama = req.body.aciklama;
-    const resim = req.file;
-    const kategori = req.body.kategori;
-    const anasayfa = req.body.anasayfa == "on" ? 1 : 0; //Anasayfa Seçilmişse 1 True Seçilmemişse 0
-    const onay = req.body.onay == "on" ? 1 : 0; //Anasayfa Seçilmişse 1 True Seçilmemişse 0
-
-    try {
-        await db.execute(
-            "INSERT INTO blog(baslik,aciklama,resim,anasayfa,onay,categoryid) VALUES (?,?,?,?,?,?)",
-            [baslik, aciklama, resim, anasayfa, onay, kategori]
-        );
-        res.redirect("/admin/blogs?action=create");
-    } catch (err) {
         console.log(err);
     }
 });
@@ -132,11 +134,21 @@ router.get("/blogs/:blogid", async (req, res) => {
     }
 });
 
-router.post("/blogs/:blogid", async function (req, res) { //Güncelleme Sorgusu
+router.post("/blogs/:blogid", imageUpload.upload.single("resim") ,async function (req, res) { //Güncelleme Sorgusu
     const blogid = req.body.blogid;
     const baslik = req.body.baslik;
     const aciklama = req.body.aciklama;
-    const resim = req.body.resim;
+    let resim = req.body.resim;
+
+    if(req.file) { //Resim Seçilmişse Veri Tabanında Güncellenecek
+        resim=req.file.filename;
+
+        fs.unlink("./public/images/" + req.body.resim,err => { //Resim Silinmişse Veri Tabanından da Silinir
+            console.log(err); //Hata varsa terminalde gösterir
+        })
+
+    }
+
     const anasayfa = req.body.anasayfa == "on" ? 1 : 0;
     const onay = req.body.onay == "on" ? 1 : 0;
     const kategoriid = req.body.kategori;
