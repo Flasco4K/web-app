@@ -14,4 +14,5 @@ router.get("/blogs", userController.blog_list);
 
 // ANASAYFA
 router.get("/", userController.index);
+
 module.exports = router;

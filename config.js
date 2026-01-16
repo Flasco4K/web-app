@@ -5,9 +5,10 @@ const config = {
         password: "4179em2427",
         database: "blogdb"
     },
-    auth: {
-        user: "daphnee75@ethereal.email",
-        pass: "jw5ZnhG4fcMR3x4stJ"
+    email: {
+        username: "emodemo4439@hotmail.com",
+        password: "4179em2427",
+        from:""
     }
 };
 

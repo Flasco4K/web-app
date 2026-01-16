@@ -1,4 +1,4 @@
-const User = require("../models/user")
+const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const emailService = require("../helpers/send-mail");
 const config = require("../config");
@@ -7,143 +7,120 @@ const { Op } = require("sequelize");
 
 exports.get_register = async function (req, res) {
     try {
-        return res.render("auth/register", { // Register (kayıt) sayfasını kullanıcıya render eder
-            title: "register" // View içine gönderilen başlık değişkeni
+        return res.render("auth/register", {
+            title: "register"
         });
     }
-    catch (err) { // Sayfa render edilirken bir hata olursa console'a yazdırır
+    catch (err) {
         console.log(err);
     }
 }
 
 exports.post_register = async function (req, res) {
-    const { name, email, password } = req.body;
+    const name = req.body.name;
+    const email = req.body.email;
+    const password = req.body.password;
 
     try {
         // 1️⃣ Email daha önce kayıtlı mı?
-        const user = await User.findOne({ where: { email } });
+        const user = await User.findOne({ where: { email: email } });
         if (user) {
             req.session.message = {
-                text: "Bu E-Mail adresi zaten kayıtlı.",
+                text: "Girdiğiniz email adresiyle daha önce kayıt olunmuş.",
                 class: "warning"
             };
-            return res.redirect("/login");
+            return res.redirect("login");
         }
-
-        // 2️⃣ Şifreyi hashle
-        const hashedPassword = await bcrypt.hash(password, 10);
-
         // 3️⃣ Kullanıcıyı oluştur
-        const newUser = await User.create({
-            fullname: name,
-            email,
-            password: hashedPassword
-        });
+        const newUser = await User.create({ fullname: name, email: email, password: hashedPassword });
 
-        // 4️⃣ TEST MAİL GÖNDER (ETHEREAL)
-        const info = await emailService.sendMail({
-            from: '"Test App" <no-reply@test.com>',
+        emailService.sendMail({
+            from: config.email.from,
             to: newUser.email,
             subject: "Hesabınız Oluşturuldu",
-            html: `
-                <h2>Merhaba ${newUser.fullname}</h2>
-                <p>Hesabınız başarıyla oluşturuldu.</p>
-                <p>Giriş yapmak için <a href="http://localhost:3000/login">tıklayın</a></p>
-            `
+            text: "Hesabınızı Başarılı Şekilde Oluşturuldu"
         });
 
-        // 5️⃣ Terminalde mail linki göster
-        console.log("MAIL ÖNİZLEME LİNKİ:");
-        console.log(nodemailer.getTestMessageUrl(info));
-
-        // 6️⃣ Başarılı mesaj
-        req.session.message = {
-            text: "Hesabınız oluşturuldu. Giriş yapabilirsiniz.",
-            class: "success"
-        };
-
-        return res.redirect("/login");
-        console.log(nodemailer.getTestMessageUrl(info));
-
-
-    } catch (err) {
-        console.log(err);
-        req.session.message = {
-            text: "Bir hata oluştu.",
-            class: "danger"
-        };
-        return res.redirect("/register");
+        req.session.message = { text: "Hesabınıza Giriş Yapabilirsiniz", class: "success" };
+        res.redirect("login")
     }
-};
+    catch (err) {
+        console.log(err);
+    }
+}
 
 exports.get_login = async function (req, res) {
     const message = req.session.message;
     delete req.session.message;
     try {
-        return res.render("auth/login", { // Login sayfasını kullanıcıya render eder
-            title: "login", // View içine gönderilen başlık değişkeni
+        return res.render("auth/login", {
+            title: "login",
             message: message,
             csrfToken: req.csrfToken()
         });
     }
-    catch (err) { // Sayfa render edilirken bir hata olursa console'a yazdırır
+    catch (err) {
         console.log(err);
     }
 }
 
-exports.get_logout = function (req, res) {
-    req.session.destroy(err => {
-        if (err) {
-            console.log("SESSION DESTROY ERROR:", err);
-        }
-        res.redirect("/account/login");
-    });
-};
+exports.get_logout = async function (req, res) {
+    try {
+        await req.session.destroy()
+        return res.redirect("/account/login");
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
 
 exports.post_login = async function (req, res) {
     const email = req.body.email;
     const password = req.body.password;
 
-    const user = await User.findOne({ where: { email } });
+    try {
+        const user = await User.findOne({
+            where: {
+                email: email
+            }
+        });
 
-    if (!user) {
+        if (!user) {
+            return res.render("auth/login", {
+                title: "login",
+                message: { text: "E-Mail Hatalı.", class: "danger" },
+            });
+        }
+        // Parola Kontrolü
+        const match = await bcrypt.compare(password, user.password);
+
+        if (match) {
+            req.session.isAuth = true;
+            req.session.fullname = user.fullname;
+
+            const url = req.query.returnUrl || "/";
+            return res.redirect(url);
+        }
         return res.render("auth/login", {
             title: "login",
-            message: { text: "E-Mail Hatalı.", class: "danger" },
-            csrfToken: req.csrfToken()   // ✅ EKLENDİ
+            message: { text: "Parola Hatalı", class: "danger" }
         });
     }
-
-    // Parola Kontrolü
-    const match = await bcrypt.compare(password, user.password);
-
-    if (!match) {
-        return res.render("auth/login", {
-            title: "login",
-            message: { text: "Parola Hatalı.", class: "danger" },
-            csrfToken: req.csrfToken()   // ✅ EKLENDİ
-        });
+    catch (err) {
+        console.log(err);
     }
-
-    req.session.isAuth = true;
-    req.session.fullname = user.fullname;
-
-    req.session.save(err => {
-        if (err) console.log(err);
-        res.redirect("/");
-    });
-};
+}
 
 exports.get_reset = async function (req, res) {
     const message = req.session.message;
     delete req.session.message;
     try {
-        return res.render("auth/reset-password", { // Register (kayıt) sayfasını kullanıcıya render eder
-            title: "reset password", // View içine gönderilen başlık değişkeni
+        return res.render("auth/reset-password", {
+            title: "reset password",
             message: message
         });
     }
-    catch (err) { // Sayfa render edilirken bir hata olursa console'a yazdırır
+    catch (err) {
         console.log(err);
     }
 }
@@ -165,7 +142,7 @@ exports.post_reset = async function (req, res) {
 
         emailService.sendMail({
             from: config.email.from,
-            to: email.email,
+            to: email,
             subject: "Reset Password",
             html: `
             <p>Parolanızı Güncellemek için Aşağıdaki Linke Tıklayınız.</p>
@@ -178,7 +155,7 @@ exports.post_reset = async function (req, res) {
         req.session.message = { text: "Parolanızı Sıfırlamak için Epostanızı Kontrol Ediniz", class: "success" };
         res.redirect("login");
     }
-    catch (err) { // Sayfa render edilirken bir hata olursa console'a yazdırır
+    catch (err) {
         console.log(err);
     }
 }
