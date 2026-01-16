@@ -5,9 +5,9 @@ const config = {
         password: "4179em2427",
         database: "blogdb"
     },
-    email: {
-        username: "mailadresin@outlook.com",
-        appPassword: "OUTLOOK_APP_PASSWORD_BURAYA"
+    auth: {
+        user: "daphnee75@ethereal.email",
+        pass: "jw5ZnhG4fcMR3x4stJ"
     }
 };
 

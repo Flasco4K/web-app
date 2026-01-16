@@ -5,7 +5,13 @@ const app = express(); // Express uygulamasını başlatır
 const cookieParser = require('cookie-parser'); // Cookie’leri okumak ve yönetmek için middleware
 const session = require('express-session') // Kullanıcı oturumlarını (session) yönetmek için middleware
 var SequelizeStore = require("connect-session-sequelize")(session.Store);
-const csurf = require('csurf')
+
+
+const csrf = require("csurf");
+const csrfProtection = csrf();
+
+app.use(csrfProtection);
+
 
 
 //Node Modules
@@ -45,7 +51,6 @@ app.use(session({ // Kullanıcı oturumlarını (session) yönetmek için kullan
 }));
 
 app.use(locals);
-app.use(csurf());
 
 app.use("/libs", express.static(path.join(__dirname, "node_modules"))); // node_modules içindeki dosyaları /libs yoluyla statik olarak sunar
 app.use("/static", express.static(path.join(__dirname, "public"))); // public klasöründeki statik dosyaları (/css, /js, /img) /static yoluyla sunar

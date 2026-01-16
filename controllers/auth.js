@@ -17,39 +17,64 @@ exports.get_register = async function (req, res) {
 }
 
 exports.post_register = async function (req, res) {
-    const name = req.body.name;     // Formdan gelen kullanıcı adını alır
-    const email = req.body.email; // Formdan gelen email bilgisini alır
-    const password = req.body.password; // Formdan gelen şifreyi alır
-
-    const hashedPassword = await bcrypt.hash(password, 10); // Şifreyi bcrypt ile hash'ler GİZLER (10 = güvenlik seviyesi)
+    const { name, email, password } = req.body;
 
     try {
-        const user = await User.findOne({ where: { email: email } });
+        // 1️⃣ Email daha önce kayıtlı mı?
+        const user = await User.findOne({ where: { email } });
         if (user) {
-            req.session.message = { text: "Girdiğiniz E-Mail Adresiyle Kayıt Olunmuş.", class: "warning" };
-            return res.redirect("login");
+            req.session.message = {
+                text: "Bu E-Mail adresi zaten kayıtlı.",
+                class: "warning"
+            };
+            return res.redirect("/login");
         }
-        const newUser = await User.create({ //User modeli üzerinden veritabanına yeni bir kullanıcı kaydı ekler
+
+        // 2️⃣ Şifreyi hashle
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 3️⃣ Kullanıcıyı oluştur
+        const newUser = await User.create({
             fullname: name,
-            email: email,
+            email,
             password: hashedPassword
         });
 
-        emailService.sendMail({
-            from: config.email.from,
+        // 4️⃣ TEST MAİL GÖNDER (ETHEREAL)
+        const info = await emailService.sendMail({
+            from: '"Test App" <no-reply@test.com>',
             to: newUser.email,
             subject: "Hesabınız Oluşturuldu",
-            text: "Hesabınız Başarılı Bir Şekilde Oluşturuldu"
-        })
+            html: `
+                <h2>Merhaba ${newUser.fullname}</h2>
+                <p>Hesabınız başarıyla oluşturuldu.</p>
+                <p>Giriş yapmak için <a href="http://localhost:3000/login">tıklayın</a></p>
+            `
+        });
 
-        req.session.message = { text: "Hesabınıza Giriş Yapabilirsiniz.", class: "success" };
+        // 5️⃣ Terminalde mail linki göster
+        console.log("MAIL ÖNİZLEME LİNKİ:");
+        console.log(nodemailer.getTestMessageUrl(info));
 
-        return res.redirect("login"); // Kayıt başarılı olursa kullanıcıyı login sayfasına yönlendirir
+        // 6️⃣ Başarılı mesaj
+        req.session.message = {
+            text: "Hesabınız oluşturuldu. Giriş yapabilirsiniz.",
+            class: "success"
+        };
+
+        return res.redirect("/login");
+        console.log(nodemailer.getTestMessageUrl(info));
+
+
+    } catch (err) {
+        console.log(err);
+        req.session.message = {
+            text: "Bir hata oluştu.",
+            class: "danger"
+        };
+        return res.redirect("/register");
     }
-    catch (err) { // Kayıt sırasında hata olursa hatayı console'a yazdırır
-        console.log(err)
-    }
-}
+};
 
 exports.get_login = async function (req, res) {
     const message = req.session.message;
@@ -80,27 +105,32 @@ exports.post_login = async function (req, res) {
     const password = req.body.password;
 
     const user = await User.findOne({ where: { email } });
+
     if (!user) {
         return res.render("auth/login", {
             title: "login",
-            message: { text: "E-Mail Hatalı.", class: "danger" }
+            message: { text: "E-Mail Hatalı.", class: "danger" },
+            csrfToken: req.csrfToken()   // ✅ EKLENDİ
         });
     }
-    //Parolo Kontrolü
+
+    // Parola Kontrolü
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
         return res.render("auth/login", {
             title: "login",
-            message: { text: "Parola Hatalı.", class: "danger" }
+            message: { text: "Parola Hatalı.", class: "danger" },
+            csrfToken: req.csrfToken()   // ✅ EKLENDİ
         });
     }
+
     req.session.isAuth = true;
     req.session.fullname = user.fullname;
 
     req.session.save(err => {
         if (err) console.log(err);
-        res.redirect("/"); // SADECE BURADA
+        res.redirect("/");
     });
 };
 
@@ -158,17 +188,17 @@ exports.get_newpassword = async function (req, res) {
 
     try {
         const user = await User.findOne({
-            where:{
-                resetToken:token,
+            where: {
+                resetToken: token,
                 resetTokenExpiration: {
-                    [Op.gt] : Date.now()
+                    [Op.gt]: Date.now()
                 }
             }
         });
         return res.render("auth/new-password", { // Register (kayıt) sayfasını kullanıcıya render eder
             title: "new password", // View içine gönderilen başlık değişkeni
             token: token,
-            userId:user.id
+            userId: user.id
         });
     }
     catch (err) { // Sayfa render edilirken bir hata olursa console'a yazdırır
@@ -177,15 +207,31 @@ exports.get_newpassword = async function (req, res) {
 }
 
 exports.post_newpassword = async function (req, res) {
-    const message = req.session.message;
-    delete req.session.message;
+    const token = req.body.token;
+    const userId = req.body.userId;
+    const newPassword = req.body.password;
+
+
     try {
-        return res.render("auth/reset-password", { // Register (kayıt) sayfasını kullanıcıya render eder
-            title: "reset password", // View içine gönderilen başlık değişkeni
-            message: message
+        const user = await User.findOne({
+            where: {
+                resetToken: token,
+                resetTokenExpiration: {
+                    [Op.gt]: Date.now()
+                },
+                id: userId
+            }
         });
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetToken = null;
+        user.resetTokenExpiration = null;
+        await user.save();
+
+        req.session.message = { text: "Parolanız Güncellendi", class: "success" }
+        return res.redirect("login");
     }
-    catch (err) { // Sayfa render edilirken bir hata olursa console'a yazdırır
+    catch (err) {
         console.log(err);
     }
 }
