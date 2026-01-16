@@ -10,11 +10,10 @@
     <%- include('../partials/nav') %>
 
         <div class="container mt-3">
-            <form method="post" enctype="multipart/form-data">
-            <div class="row my-5 gx-5">
+            <form method="post" enctype="multipart/form-data" action="/admin/blogs/<%= blog.id %>?_csrf=<%= csrfToken %>">
+                <div class="row my-5 gx-5">
 
                     <div class="col-md-10">
-
                         <input type="hidden" name="blogid" value="<%= blog.id %>">
                         <input type="hidden" name="resim" value="<%= blog.resim %>">
                         <div class="row mb-3">
@@ -27,8 +26,7 @@
                         <div class="row mb-3">
                             <label for="url" class="col-sm-1 col-form-label">Url</label>
                             <div class="col-sm-11">
-                                <input type="text" class="form-control" id="url" name="url"
-                                    value="<%= blog.url %>">
+                                <input type="text" class="form-control" id="url" name="url" value="<%= blog.url %>">
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -78,9 +76,8 @@
                             <% categories.forEach(category=> { %>
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="category_ <%= category.id %>"
-                                        name="categories[]"
-                                        value="<%= category.id %>"
-                                        <%=blog.categories.some(cat=> cat.id == category.id) ? "checked" : "" %>
+                                        name="categories[]" value="<%= category.id %>" <%=blog.categories.some(cat=>
+                                    cat.id == category.id) ? "checked" : "" %>
                                     />
                                     <!--Hangisi Seçilmişse Edite Basıldığında Seçili Olsun-->
                                     <label class="form-check-label" for="category_<%= category.id %>">
@@ -91,8 +88,8 @@
                         </div>
                     </div>
 
-                </form>
-            </div>
+            </form>
+        </div>
         </div>
 </body>
 
