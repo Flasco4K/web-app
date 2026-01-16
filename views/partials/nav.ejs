@@ -2,21 +2,53 @@
     <div class="container">
         <a href="/" class="navbar-brand">Blog App</a>
         <ul class="navbar-nav me-auto">
+
             <li class="nav-item">
                 <a href="/blogs" class="nav-link">Blog Listesi</a>
             </li>
-            <li class="nav-item">
-                <a href="/admin/blogs" class="nav-link">Admin Blogs</a>
-            </li>
-            <li class="nav-item">
-                <a href="/admin/categories" class="nav-link">Admin Categories</a>
-            </li>
-            <li class="nav-item">
-                <a href="/admin/blog/create" class="nav-link">Add Blog</a>
-            </li>
-            <li class="nav-item">
-                <a href="/admin/category/create" class="nav-link">Add Category</a>
-            </li>
+
+            <% if (isAuth) { %>
+                <!-- Kullanıcının giriş yapıp yapmadığını kontrol etmek için cookie’den gelen isAuth değerini kontrol eder -->
+
+                <li class="nav-item">
+                    <a href="/admin/blogs" class="nav-link">Admin Blogs</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/categories" class="nav-link">Admin Categories</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/blog/create" class="nav-link">Add Blog</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/category/create" class="nav-link">Add Category</a>
+                </li>
+                <% } %>
+        </ul>
+
+        <ul class="navbar-nav ms-auto">
+
+            <% if (isAuth) { %>  <!-- Kullanıcının Login OLMUŞSA Logout Gözükür -->
+
+                <li class="nav-item">
+                        <a href="/account/index" class="nav-link"><%= fullname %></a>
+                    </li>
+
+                <li class="nav-item">
+                    <a href="/account/logout" class="nav-link">Logout</a>
+                </li>
+
+                <% } else { %> <!-- Kullanıcının Login OLMAMIŞSA Logout Gözükür -->
+
+                    <li class="nav-item">
+                        <a href="/account/login" class="nav-link">Login</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="/account/register" class="nav-link">Register</a>
+                    </li>
+
+                    <% } %>
+
         </ul>
     </div>
 </nav>

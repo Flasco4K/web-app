@@ -18,17 +18,15 @@
                         <%=title%>
                     </h1>
 
-                    <% if (blogs.length == 0) { %>
-                     <%- include("../partials/no-products") %>
-                    <% } %>
+                    <% if (blogs.length==0) { %>
+                        <%- include("../partials/no-products") %>
+                            <% } %>
 
-                    <% blogs.forEach(blog=> { %>
-                        <%- include("../partials/blog-card",blog) %>
-                            <% }) %>
+                                <% blogs.forEach(blog=> { %>
+                                    <%- include("../partials/blog-card",blog) %>
+                                        <% }) %>
+                                            <%- include('../partials/paginations') %>
 
-                                <% if (blogs.filter(b=> b.onay).length> 3) { %>
-                                    <%- include('../partials/paginations') %>
-                                        <% } %>
 
                 </div>
 

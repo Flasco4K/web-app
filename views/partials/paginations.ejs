@@ -1,20 +1,21 @@
-<!-- pagination -->
-<nav>
-    <ul class="pagination">
-        <li class="page-item">
-            <a href="" class="page-link">Geri</a>
-        </li>
-        <li class="page-item">
-            <a href="" class="page-link active">1</a>
-        </li>
-        <li class="page-item">
-            <a href="" class="page-link">2</a>
-        </li>
-        <li class="page-item">
-            <a href="" class="page-link">3</a>
-        </li>
-        <li class="page-item">
-            <a href="" class="page-link">İleri</a>
-        </li>
-    </ul>
-</nav>
+<% if (totalPages> 1) { %> <!-- Toplam Sayfa Sayısı 1 Den FAZLAYSA Göstersin -->
+    <!-- pagination -->
+    <nav class="mt-5">
+        <ul class="pagination justifty-content-start">
+            <li class="page-item">
+                <a href="?page=0" class="page-link">İlk Sayfa</a>
+            </li>
+
+            <% for( let i=0; i < totalPages; i++ ) { %> <!-- Sayfa Sayısı Kadar TEKRARLAR -->
+                <li class="page-item">
+                    <a href="?page=<%= i %>" class="page-link <%= (i == currentPage) ? " active":"" %>">
+                        <%= i + 1 %>
+                    </a>
+                </li>
+                <% } %>
+                    <li class="page-item">
+                        <a href="?page=<%= totalPages - 1 %>" class="page-link">Son Sayfa</a>
+                    </li>
+        </ul>
+    </nav>
+    <% } %>

@@ -17,7 +17,7 @@
                             <b><%= category.name %></b> <br> İsimli Category Kaydini Silmek İstiyor Musunuz ?
                         </p>
                         <form method="post">
-                            <input type="hidden" name="categoryid" value="<%= category.categoryid %>">
+                            <input type="hidden" name="categoryid" value="<%= category.id %>">
                             <button class="btn btn-danger" type="submit">Evet</button>
                             <a href="/admin/categories" class="btn btn-primary">Vazgeç</a>
                         </form>
