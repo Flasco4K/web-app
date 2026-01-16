@@ -28,6 +28,7 @@ app.set("view engine", "ejs");
 const Category = require("./models/category");
 const Blog = require("./models/blog");
 const User = require("./models/user");
+const Role = require("./models/role");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -65,10 +66,14 @@ User.hasMany(Blog);
 Blog.belongsToMany(Category, { through: "blogCategories" });
 Category.belongsToMany(Blog, { through: "blogCategories" });
 
+Role.belongsToMany(User, { through: "userRoles" });
+User.belongsToMany(Role, { through: "userRoles" });
+
+//Veri Tabanı Oluşturma
 (async () => {
   // await sequelize.sync({ force: true });
   // await dummyData();
-})()
+})();
 
 // Server
 app.listen(3000, () => {

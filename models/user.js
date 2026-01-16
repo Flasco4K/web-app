@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../data/db");
+const sequelize = require("../data/db");;
 
 const User = sequelize.define("user", { //Sequelize’e yeni bir model (tablo şeması) tanımlar
     fullname: {

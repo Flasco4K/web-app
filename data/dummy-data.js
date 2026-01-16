@@ -1,5 +1,6 @@
 const Category = require("../models/category");
 const Blog = require("../models/blog");
+const Role = require("../models/role");
 const slugField = require("../helpers/slugfield");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
@@ -10,6 +11,27 @@ async function populate() {
     const count = await Category.count();
 
     if (count == 0) {
+
+        const users = await User.bulkCreate([
+            { fullname: "emirhan demirhan", email: "emirhan.bda0@gmail.com", password: await bcrypt.hash("emirhan", 10) },
+            { fullname: "alex pereira", email: "alex.pereira0@gmail.com", password: await bcrypt.hash("alex", 10) },
+            { fullname: "sadık turan", email: "info@sadik.com", password: await bcrypt.hash("alex", 10) },
+            { fullname: "çınar turan", email: "info@turan.com", password: await bcrypt.hash("alex", 10) },
+            { fullname: "ahmet yilmaz", email: "info@yilmaz.com", password: await bcrypt.hash("alex", 10) }
+        ])
+
+        const roles = await Role.bulkCreate([
+            {rolename:"admin"},
+            {rolename:"moderator"},
+            {rolename:"guest"}
+        ]);
+
+        await users[0].addRole(roles[0]); //Admin Rolu => Emirhan
+        await users[1].addRole(roles[1]); //Moderator Rolu => Alex
+        await users[2].addRole(roles[2]); //Moderator Rolu => Sadık
+
+        await users[3].addRole(roles[3]); //Guest Rolu => Çınar
+        await users[4].addRole(roles[3]); //Guest Rolu => Ahmet
 
         const categories = await Category.bulkCreate([
             { name: "Web Geliştirme", url: slugField("Web Geliştirme"), },
@@ -62,7 +84,7 @@ async function populate() {
                 resim: "4.png",
                 anasayfa: true,
                 onay: true
-            }, 
+            },
             {
                 baslik: "Node.js İle Sıfırdan İleri Seviye Web Geliştirme",
                 url: slugField("Node.js İle Sıfırdan İleri Seviye Web Geliştirme"),
@@ -101,10 +123,7 @@ async function populate() {
             }
         ]);
 
-        const users = await User.bulkCreate([
-            {fullname: "emirhan demirhan",email: "emirhan.bda0@gmail.com", password: await bcrypt.hash("emirhan",10)},
-            {fullname: "alex pereira",email: "alex.pereira0@gmail.com", password: await bcrypt.hash("alex",10)}
-        ])
+
 
         await categories[0].addBlog(blogs[0]);
         await categories[0].addBlog(blogs[1]);

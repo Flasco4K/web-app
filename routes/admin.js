@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
+
 const imageUpload = require("../helpers/image-upload");
 const adminController = require("../controllers/admin");
 const isAuth = require("../middlewares/auth");
-const csrf = require("csurf");
+const csrf = require("../middlewares/csrf");
 
 router.get("/blog/delete/:blogid", isAuth,csrf, adminController.get_blog_Delete);
 
@@ -34,5 +35,10 @@ router.post("/categories/:categoryid", isAuth, adminController.post_Category_edi
 router.get("/blogs", isAuth,csrf, adminController.get_blogs);
 
 router.get("/categories", isAuth,csrf, adminController.get_categories);
+
+router.get("/roles",isAuth,adminController.get_roles);
+router.get("/roles/:roleid",isAuth,csrf,adminController.get_role_edit);
+router.post("/roles/remove",isAuth,adminController.roles_remove);
+router.post("/roles/:roleid",isAuth,csrf,adminController.post_role_edit);
 
 module.exports = router;

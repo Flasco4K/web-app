@@ -14,12 +14,12 @@
                 <div class="col-md-12 mt-3">
                     <form method="post">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <input type="hidden" name="categoryid" value="<%= category.id %>">
+                        <input type="hidden" name="roleid" value="<%= role.id %>">
                         <div class="row mb-3">
                             <label for="baslik" class="col-sm-2 col-form-label">Name</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" id="name" name="name"
-                                    value="<%=category.name%>">
+                                <input type="text" class="form-control" id="rolename" name="rolename"
+                                    value="<%=role.rolename%>">
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -30,38 +30,36 @@
 
                     </form>
                 </div>
-                <p>Blog Sayisi : <%= countBlog %></p>
                 <table class="table table-bordered table-striped mt-3">
                     <thead>
                         <tr>
                             <th style="width: 50px;">id</th>
-                            <th style="width: 150px;">resim</th>
-                            <th>baslik</th>
+                            <th style="width: 150px;">Username</th>
+                            <th>Email</th>
                             <th style="width: 200px;"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% blogs.forEach(blog=> { %>
+                        <% users.forEach(user=> { %>
                             <tr>
                                 <td>
-                                    <%= blog.dataValues.id %>
+                                    <%= user.id %>
                                 </td>
                                 <td>
-                                    <img src="/static/images/<%= blog.dataValues.resim %>" class="img-fluid" alt="">
+                                    <%= user.fullname %>
                                 </td>
                                 <td>
-                                    <%= blog.baslik %>
+                                    <%= user.email %>
                                 </td>
                                 <td>
-                                    <a class="btn btn-sm btn-primary"
-                                        href="/admin/blogs/<%= blog.dataValues.id %>">Edit</a>
+                                    <a class="btn btn-sm btn-primary" href="/admin/users/<%= user.id %>">Edit</a>
 
-                                        <form style="display: inline-block;" action="/admin/categories/remove" method="post">
-                                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                            <input type="hidden" name="blogid" value="<%= blog.id %>">
-                                            <input type="hidden" name="categoryid" value="<%= category.id %>">
-                                            <button class="btn btn-sm btn-danger" type="submit">Kategoriden Çıkar</button>
-                                        </form>
+                                    <form style="display: inline-block;" action="/admin/roles/remove" method="post">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <input type="hidden" name="roleid" value="<%= role.id %>">
+                                        <input type="hidden" name="userid" value="<%= user.id %>">
+                                        <button class="btn btn-sm btn-danger" type="submit">Kategoriden Çıkar</button>
+                                    </form>
                                 </td>
                             </tr>
                             <% }) %>
