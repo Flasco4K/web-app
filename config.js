@@ -7,8 +7,8 @@ const config = {
     },
     email: {
         username: "emodemo4439@hotmail.com",
-        password: "4179em2427",
-        from:""
+        password: "",
+        from: ""
     }
 };
 
